@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+//npx sequelize db:seed:all
 module.exports = {
   "development": {
     "use_env_variable": "DATABASE_URL",

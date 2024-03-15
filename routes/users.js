@@ -13,9 +13,9 @@ const { validateRegister, validateLogin, validateChangeUsername,
 
 const router = express.Router();
 const s3 = new aws.S3({
-    accessKeyId: process.env.AWS_ID,
-    secretAccessKey: process.env.AWS_SECRET,
-    region: process.env.AWS_REGION
+  accessKeyId: process.env.AWS_ID,
+  secretAccessKey: process.env.AWS_SECRET,
+  region: process.env.AWS_REGION
 });
 const uploadTemp = multer({ dest: './tmp/' }).single('file');
 
@@ -28,23 +28,23 @@ router.post('/', async (req, res) => {
   UserDao.usernameExists(username).then((uniqueName) => {
     if (uniqueName) {
       if (password === confirmPassword) {
-        return UserDao.create(username, password); 
+        return UserDao.create(username, password);
       } else throw new UserError('Password and confirm password do not match', 400);
-    } 
+    }
     else throw new UserError('Username is already taken', 409);
   })
-  .then((userId) => {
-    if (userId > 0) {
-      return res.redirect('/login');
-    } else throw new UserError('An error occured when creating the user', 500);
-  })
-  .catch((err) => {
-    if (err instanceof UserError) {
-      return res.status(err.getStatus()).json({ message: err.getMessage() });
-    } 
-    console.error(err);
-    return res.status(500).json({ message: 'An unexpected error occured' });
-  });
+    .then((userId) => {
+      if (userId > 0) {
+        return res.redirect('/login');
+      } else throw new UserError('An error occured when creating the user', 500);
+    })
+    .catch((err) => {
+      if (err instanceof UserError) {
+        return res.status(err.getStatus()).json({ message: err.getMessage() });
+      }
+      console.error(err);
+      return res.status(500).json({ message: 'An unexpected error occured' });
+    });
 });
 
 /* Change user information */
@@ -62,18 +62,18 @@ router.patch('/', authenticate, async (req, res) => {
         return UserDao.changeUsername(oldUsername, newUsername, password);
       } else throw new UserError('Username is already taken', 409);
     })
-    .then((userId) => {
-      if (userId > 0) {
-        return res.status(204).send();
-      } else throw new UserError('Could not change username. Try again later', 500);
-    })
-    .catch((err) => {
-      if (err instanceof UserError) {
-        return res.status(err.getStatus()).json({ message: err.getMessage() });
-      }
-      console.error(err);
-      return res.status(500).json({ message: 'An unexpected error occured' });
-    });
+      .then((userId) => {
+        if (userId > 0) {
+          return res.status(204).send();
+        } else throw new UserError('Could not change username. Try again later', 500);
+      })
+      .catch((err) => {
+        if (err instanceof UserError) {
+          return res.status(err.getStatus()).json({ message: err.getMessage() });
+        }
+        console.error(err);
+        return res.status(500).json({ message: 'An unexpected error occured' });
+      });
   } else {
     const { error } = validateChangePassword(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
@@ -82,19 +82,19 @@ router.patch('/', authenticate, async (req, res) => {
 
     if (newPassword === confirmNewPassword) {
       UserDao.changePassword(req.user.username, oldPassword, newPassword)
-      .then((userId) => {
-        if (userId > 0) {
-          return res.status(204).send();
-        } else throw new UserError('Could not change password. Try again later', 500);
-      })
-      .catch((err) => {
-        if (err instanceof UserError) {
-          return res.status(err.getStatus()).json({ message: err.getMessage() });
-        }
-        console.error(err);
-        return res.status(500).json({ message: 'An unexpected error occrued' });
-      })
-    } else res.status(400).json({ message: 'New password and confirm password do not match'});
+        .then((userId) => {
+          if (userId > 0) {
+            return res.status(204).send();
+          } else throw new UserError('Could not change password. Try again later', 500);
+        })
+        .catch((err) => {
+          if (err instanceof UserError) {
+            return res.status(err.getStatus()).json({ message: err.getMessage() });
+          }
+          console.error(err);
+          return res.status(500).json({ message: 'An unexpected error occrued' });
+        })
+    } else res.status(400).json({ message: 'New password and confirm password do not match' });
   }
 });
 
@@ -104,28 +104,28 @@ router.post('/login', async (req, res) => {
 
   const { username, password } = req.body;
   UserDao.authenticate(username, password)
-  .then((userId) => {
-    if (userId > 0) {
-      const token = generateToken(userId);
-      const cookieOptions = {
-        httpOnly: true,
-        maxAge: 6 * 60 * 60 * 1000, // 6 hours
-      };
-      res.cookie('token', token, cookieOptions);
-      res.redirect('/');
-    } else throw new UserError('Invalid username and/or password', 400);
-  })
-  .catch((err) => {
-    if (err instanceof UserError) {
-      return res.status(err.getStatus()).json({ message: err.getMessage() });
-    }
-    console.error(err);
-    return res.status(500).json({ message: 'An unexpected error occured' });
-  })
+    .then((userId) => {
+      if (userId > 0) {
+        const token = generateToken(userId);
+        const cookieOptions = {
+          httpOnly: true,
+          maxAge: 6 * 60 * 60 * 1000, // 6 hours
+        };
+        res.cookie('token', token, cookieOptions);
+        res.redirect('/');
+      } else throw new UserError('Invalid username and/or password', 400);
+    })
+    .catch((err) => {
+      if (err instanceof UserError) {
+        return res.status(err.getStatus()).json({ message: err.getMessage() });
+      }
+      console.error(err);
+      return res.status(500).json({ message: 'An unexpected error occured' });
+    })
 });
 
 router.post('/logout', authenticate, async (req, res) => {
-  res.cookie('token', '', { httpOnly: true, maxAge: 1});
+  res.cookie('token', '', { httpOnly: true, maxAge: 1 });
   return res.json();
 });
 
@@ -151,7 +151,8 @@ router.patch('/avatar', authenticate, uploadTemp, async (req, res) => {
     const uploadedImage = await s3.upload({
       Bucket: process.env.AWS_BUCKET,
       Key: key,
-      Body: blob
+      Body: blob,
+      ACL: "public-read"
     }).promise();
 
     if (!uploadedImage.Location) {
