@@ -1,6 +1,6 @@
 # term-project-uno-forked
 
-### Web application for the card game, UNO. Some features include accounts, game lobbies, game chat, and leaderboards. TODO: Mobile responsive.
+Web application for the card game, UNO. Some features include accounts, game lobbies, game chat, and leaderboards. TODO: Mobile responsive.
 
 ## Here are some screens from the website
 
